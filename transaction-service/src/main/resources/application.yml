@@ -1,0 +1,109 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: transaction-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/transaction_db}
+    username: ${SPRING_DATASOURCE_USERNAME:bankflow}
+    password: ${SPRING_DATASOURCE_PASSWORD:bankflow_secret}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        default_schema: public
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis_secret}
+      connect-timeout: 2s
+      timeout: 2s
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+      acks: all
+      retries: 3
+
+# ── OpenFeign ────────────────────────────────────────────────────
+account-service:
+  url: ${ACCOUNT_SERVICE_URL:http://localhost:8082}
+
+# ── Resilience4j ─────────────────────────────────────────────────
+resilience4j:
+  retry:
+    instances:
+      accountServiceApply:
+        max-attempts: 3
+        wait-duration: 200ms
+        retry-exceptions:
+          - feign.RetryableException
+          - org.springframework.web.client.ResourceAccessException
+  circuitbreaker:
+    instances:
+      accountService:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+# ── JWT ──────────────────────────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET}
+
+# ── Internal service secret ───────────────────────────────────────
+internal:
+  service-secret: ${INTERNAL_SERVICE_SECRET:dev-internal-secret}
+
+# ── Actuator ──────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      service: transaction-service
+
+# ── OpenAPI ───────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# ── Logging (structured JSON) ─────────────────────────────────────
+logging:
+  pattern:
+    console: >
+      {"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}","level":"%level",
+      "service":"transaction-service","correlationId":"%X{correlationId}",
+      "logger":"%logger{36}","message":"%msg"}%n
+  level:
+    root: INFO
+    com.bankflow: DEBUG

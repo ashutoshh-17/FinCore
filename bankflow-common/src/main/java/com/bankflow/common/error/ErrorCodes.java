@@ -48,4 +48,6 @@ public final class ErrorCodes {
     public static final String CONFLICT                  = "CONFLICT";
     public static final String INTERNAL_ERROR            = "INTERNAL_ERROR";
     public static final String SERVICE_UNAVAILABLE       = "SERVICE_UNAVAILABLE";
+    public static final String VALIDATION_ERROR          = "VALIDATION_ERROR";
+    public static final String CONCURRENT_MODIFICATION   = "CONCURRENT_MODIFICATION";
 }
