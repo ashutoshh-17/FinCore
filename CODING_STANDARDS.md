@@ -60,7 +60,7 @@ This file is the rulebook. `ARCHITECTURE.md` explains what the system is; this f
 - Concurrency: use optimistic locking (`@Version`) on balance-bearing entities and handle `OptimisticLockingFailureException` with a bounded retry (max 3, with jitter). If pessimistic locking is used, document why in the class Javadoc.
 
 ### Outbound Calls (service → service)
-- Use `RestClient` (or OpenFeign) wrapped in a dedicated `*Client` class per target service.
+- Use **Spring Cloud OpenFeign** wrapped in a dedicated `*Client` interface per target service. Do not use `RestClient` or `RestTemplate`.
 - Every outbound call has an **explicit timeout** and is wrapped with **Resilience4j** (retry with backoff for idempotent calls, circuit breaker, bulkhead where relevant).
 - Only retry calls that are idempotent. Pass the transfer id / idempotency key downstream so retries are safe.
 - Propagate `X-Correlation-Id` on every call.

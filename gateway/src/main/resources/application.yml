@@ -18,8 +18,7 @@ spring:
     gateway:
       # ── Global filters ──────────────────────────────────────────
       default-filters:
-        # Inject X-Correlation-Id if missing
-        - name: RequestHeaderToRequestUri
+        # Inject X-Gateway-Source
         - name: AddRequestHeader
           args:
             name: X-Gateway-Source
@@ -39,6 +38,7 @@ spring:
                 redis-rate-limiter.replenishRate: 5
                 redis-rate-limiter.burstCapacity: 10
                 redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         # Auth Service — user profile (JWT required)
         - id: auth-service-me
@@ -68,6 +68,7 @@ spring:
                 redis-rate-limiter.replenishRate: 10
                 redis-rate-limiter.burstCapacity: 20
                 redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         # Ledger Service — read-only public API
         - id: ledger-service

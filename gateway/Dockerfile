@@ -6,6 +6,13 @@ WORKDIR /build
 COPY pom.xml .
 COPY bankflow-common/pom.xml bankflow-common/pom.xml
 COPY gateway/pom.xml gateway/pom.xml
+COPY auth-service/pom.xml auth-service/pom.xml
+COPY account-service/pom.xml account-service/pom.xml
+COPY transaction-service/pom.xml transaction-service/pom.xml
+COPY ledger-service/pom.xml ledger-service/pom.xml
+COPY notification-service/pom.xml notification-service/pom.xml
+COPY fraud-service/pom.xml fraud-service/pom.xml
+COPY ai-assistant-service/pom.xml ai-assistant-service/pom.xml
 
 # Download dependencies (cached layer if POMs unchanged)
 RUN mvn -pl bankflow-common,gateway -am dependency:go-offline -q
