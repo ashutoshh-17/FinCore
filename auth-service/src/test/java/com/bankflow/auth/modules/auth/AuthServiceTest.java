@@ -67,7 +67,11 @@ class AuthServiceTest {
         when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
         when(roleRepository.findByName("CUSTOMER")).thenReturn(Optional.of(customerRole));
         when(passwordEncoder.encode("Password1!")).thenReturn("hashed");
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            ReflectionTestUtils.setField(u, "id", UUID.randomUUID());
+            return u;
+        });
         when(outboxEventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(refreshTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(jwtService.generateAccessToken(any(), any())).thenReturn("access-token");
