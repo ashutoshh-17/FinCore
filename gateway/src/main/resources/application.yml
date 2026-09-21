@@ -1,0 +1,125 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+
+  # Redis — used for rate limiting
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis_secret}
+      connect-timeout: 2s
+      timeout: 2s
+
+  cloud:
+    gateway:
+      # ── Global filters ──────────────────────────────────────────
+      default-filters:
+        # Inject X-Correlation-Id if missing
+        - name: RequestHeaderToRequestUri
+        - name: AddRequestHeader
+          args:
+            name: X-Gateway-Source
+            value: bankflow-gateway
+
+      # ── Routes ─────────────────────────────────────────────────
+      routes:
+
+        # Auth Service — public endpoints (no JWT needed)
+        - id: auth-service-public
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
+
+        # Auth Service — user profile (JWT required)
+        - id: auth-service-me
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/users/me
+          filters:
+            - name: JwtAuthenticationFilter
+
+        # Account Service
+        - id: account-service
+          uri: ${ACCOUNT_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/accounts/**
+          filters:
+            - name: JwtAuthenticationFilter
+
+        # Transaction Service — rate-limited
+        - id: transaction-service
+          uri: ${TRANSACTION_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/transfers/**, /api/v1/deposits/**, /api/v1/withdrawals/**
+          filters:
+            - name: JwtAuthenticationFilter
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+
+        # Ledger Service — read-only public API
+        - id: ledger-service
+          uri: ${LEDGER_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/v1/accounts/*/statement, /api/v1/admin/reconciliation/**
+          filters:
+            - name: JwtAuthenticationFilter
+
+        # AI Assistant Service
+        - id: ai-assistant-service
+          uri: ${AI_ASSISTANT_SERVICE_URL:http://localhost:8087}
+          predicates:
+            - Path=/api/v1/assistant/**
+          filters:
+            - name: JwtAuthenticationFilter
+
+        # ── BLOCK all /internal/** — never routed externally ──────
+        - id: block-internal
+          uri: no://op
+          predicates:
+            - Path=/internal/**
+          filters:
+            - name: SetStatus
+              args:
+                status: 404
+
+# ── JWT ──────────────────────────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET}
+
+# ── Actuator ──────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      service: gateway
+
+# ── Logging ───────────────────────────────────────────────────────
+logging:
+  pattern:
+    console: >
+      {"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}","level":"%level",
+      "service":"gateway","correlationId":"%X{correlationId}",
+      "logger":"%logger{36}","message":"%msg"}%n
+  level:
+    root: INFO
+    com.bankflow: DEBUG
+    org.springframework.cloud.gateway: INFO

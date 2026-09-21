@@ -1,0 +1,81 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${SPRING_DATASOURCE_USERNAME:bankflow}
+    password: ${SPRING_DATASOURCE_PASSWORD:bankflow_secret}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Flyway manages the schema; Hibernate only validates
+    open-in-view: false           # Lazy loading must be explicit
+    properties:
+      hibernate:
+        format_sql: false
+        default_schema: public
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+      acks: all
+      retries: 3
+
+# ── JWT ──────────────────────────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiry-ms: ${JWT_ACCESS_TOKEN_EXPIRY_MS:900000}       # 15 min
+  refresh-token-expiry-days: ${JWT_REFRESH_TOKEN_EXPIRY_DAYS:7}
+
+# ── Internal service secret ───────────────────────────────────────
+internal:
+  service-secret: ${INTERNAL_SERVICE_SECRET:dev-internal-secret}
+
+# ── Actuator ──────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      service: auth-service
+
+# ── OpenAPI ───────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# ── Logging (structured JSON) ─────────────────────────────────────
+logging:
+  pattern:
+    console: >
+      {"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}","level":"%level",
+      "service":"auth-service","correlationId":"%X{correlationId}",
+      "logger":"%logger{36}","message":"%msg"}%n
+  level:
+    root: INFO
+    com.bankflow: DEBUG

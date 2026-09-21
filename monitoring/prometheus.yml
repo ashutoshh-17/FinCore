@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gateway:8080']
+
+  - job_name: 'auth-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['auth-service:8081']
+
+  - job_name: 'account-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['account-service:8082']
+
+  - job_name: 'transaction-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['transaction-service:8083']
+
+  - job_name: 'ledger-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ledger-service:8084']
+
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['notification-service:8085']
+
+  - job_name: 'fraud-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['fraud-service:8086']
+
+  - job_name: 'ai-assistant-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ai-assistant-service:8087']

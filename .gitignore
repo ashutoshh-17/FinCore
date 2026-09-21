@@ -1,0 +1,55 @@
+# ─── Maven ────────────────────────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+!**/test-fixtures/**/*.jar
+
+# Maven wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# ─── IDE ──────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+.eclipse/
+.settings/
+.classpath
+.project
+*.DS_Store
+
+# ─── Environment / secrets (NEVER commit .env) ────────────────────
+.env
+*.env
+!.env.example
+
+# ─── Logs ─────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Docker ───────────────────────────────────────────────────────
+.docker/
+
+# ─── Python (fraud-service ML) ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.pkl
+*.joblib
+
+# ─── Node / Frontend ──────────────────────────────────────────────
+node_modules/
+.next/
+out/
+dist/
+.pnp/
+.pnp.js
+
+# ─── OS ───────────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
