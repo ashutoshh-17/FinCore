@@ -11,10 +11,7 @@ jobs:
     name: Build & Test
     runs-on: ubuntu-latest
 
-    services:
-      # Postgres — used by Testcontainers if not managed by TC itself;
-      # Testcontainers starts its own containers so no external service needed.
-      # Kafka and Redis are also managed by Testcontainers per-test.
+
 
     steps:
       - name: Checkout code
