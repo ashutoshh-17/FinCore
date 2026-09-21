@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /** JWT authentication filter for transaction-service. */
@@ -27,7 +27,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final javax.crypto.SecretKey signingKey;
 
     public JwtAuthFilter(@Value("${jwt.secret}") String jwtSecret) {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -51,11 +51,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     .getPayload();
 
             String userId = claims.getSubject();
-            @SuppressWarnings("unchecked")
-            List<String> roles = (List<String>) claims.get("roles", List.class);
+            String rolesStr = claims.get("roles", String.class);
+            List<String> roles = (rolesStr != null && !rolesStr.isEmpty()) 
+                    ? List.of(rolesStr.split(",")) 
+                    : List.of();
 
-            List<SimpleGrantedAuthority> authorities = roles == null ? List.of() :
-                    roles.stream().map(r -> new SimpleGrantedAuthority("ROLE_" + r)).toList();
+            List<SimpleGrantedAuthority> authorities = roles.stream()
+                    .map(r -> new SimpleGrantedAuthority("ROLE_" + r)).toList();
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(userId, null, authorities);

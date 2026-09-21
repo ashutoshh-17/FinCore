@@ -65,7 +65,7 @@ public class TransferService {
      * @param request        the transfer request
      * @return the transfer response (either new or cached)
      */
-    @Transactional
+    @Transactional(noRollbackFor = TransferExecutionException.class)
     public TransferResponse createTransfer(String idempotencyKey, UUID initiatedBy, CreateTransferRequest request) {
         if (request.fromAccountId().equals(request.toAccountId())) {
             throw new TransferValidationException(ErrorCodes.SELF_TRANSFER, "Source and destination accounts must be different");

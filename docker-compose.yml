@@ -177,6 +177,7 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
       JWT_SECRET: ${JWT_SECRET}
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -207,6 +208,7 @@ services:
       - "8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
@@ -238,6 +240,7 @@ services:
       - "8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/account_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
@@ -267,6 +270,7 @@ services:
       - "8083:8083"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transaction_db
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
@@ -304,6 +308,7 @@ services:
   #     - "8084:8084"
   #   environment:
   #     SPRING_PROFILES_ACTIVE: docker
+  #     JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
   #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ledger_db
   #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
   #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
@@ -328,6 +333,7 @@ services:
   #     - "8085:8085"
   #   environment:
   #     SPRING_PROFILES_ACTIVE: docker
+  #     JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
   #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notification_db
   #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
   #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
@@ -352,6 +358,7 @@ services:
   #     - "8086:8086"
   #   environment:
   #     SPRING_PROFILES_ACTIVE: docker
+  #     JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
   #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fraud_db
   #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
   #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
@@ -375,6 +382,7 @@ services:
   #     - "8087:8087"
   #   environment:
   #     SPRING_PROFILES_ACTIVE: docker
+  #     JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
   #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ai_db
   #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
   #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
