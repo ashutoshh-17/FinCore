@@ -4,11 +4,9 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
- * Mirrors account-service's ReverseTransferRequest DTO.
- * The amount and currency are required so account-service can
- * correctly credit the sender and debit the receiver during reversal.
+ * DTO sent to the Ledger Service's /internal/ledger/record endpoint.
  */
-public record ReverseTransferRequest(
+public record RecordTransferRequest(
         UUID transferId,
         UUID fromAccountId,
         UUID toAccountId,

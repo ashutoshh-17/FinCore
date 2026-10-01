@@ -51,6 +51,9 @@ spring:
 account-service:
   url: ${ACCOUNT_SERVICE_URL:http://localhost:8082}
 
+ledger-service:
+  url: ${LEDGER_SERVICE_URL:http://localhost:8084}
+
 # ── Resilience4j ─────────────────────────────────────────────────
 resilience4j:
   retry:
@@ -61,6 +64,12 @@ resilience4j:
         retry-exceptions:
           - feign.RetryableException
           - org.springframework.web.client.ResourceAccessException
+      ledgerServiceRecord:
+        max-attempts: 2
+        wait-duration: 300ms
+        retry-exceptions:
+          - feign.RetryableException
+          - org.springframework.web.client.ResourceAccessException
   circuitbreaker:
     instances:
       accountService:
@@ -68,6 +77,11 @@ resilience4j:
         minimum-number-of-calls: 5
         failure-rate-threshold: 50
         wait-duration-in-open-state: 10s
+      ledgerService:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
 
 # ── JWT ──────────────────────────────────────────────────────────
 jwt:

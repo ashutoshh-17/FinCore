@@ -92,25 +92,26 @@ public class InternalTransferService {
     )
     @Transactional
     public void reverseTransfer(ReverseTransferRequest req) {
-        // To reverse: look up the original applied amounts from the audit log would be ideal.
-        // For Phase 2 simplicity, the Transaction service provides the original amounts again.
-        // Phase 3 will introduce saga_steps to make this fully self-contained.
         Account from = accountRepository.findByIdForUpdate(req.fromAccountId())
                 .orElseThrow(() -> new AccountNotFoundException("Source account not found: " + req.fromAccountId()));
         Account to = accountRepository.findByIdForUpdate(req.toAccountId())
                 .orElseThrow(() -> new AccountNotFoundException("Destination account not found: " + req.toAccountId()));
 
-        // Reversal: credit the source (refund), debit the destination (take back)
-        // Note: we trust the Transaction service to pass correct accounts.
-        // The amount is retrieved from the audit log here for idempotency safety.
-        // For Phase 2, we skip full idempotency check — Phase 3 adds saga_steps.
+        // Reversal: re-credit the sender (give money back), re-debit the receiver (take money back).
+        // The account status check is intentionally skipped here — if an account was frozen mid-saga,
+        // the compensation must still be able to return the money.
+        from.credit(req.amount());   // give the money back to the sender
+        to.debit(req.amount());      // take the money back from the receiver
 
-        log.info("Transfer reversal requested: transferId={} from={} to={}",
-                req.transferId(), req.fromAccountId(), req.toAccountId());
+        accountRepository.save(from);
+        accountRepository.save(to);
 
-        // Audit
+        String details = toJson(new TransferDetails(req.transferId(), req.fromAccountId(), req.toAccountId(), req.amount()));
         auditLogRepository.save(AuditLog.of("system", "TRANSFER_REVERSED", "Account",
-                req.fromAccountId(), toJson(req), MaskingUtils.currentCorrelationId()));
+                req.fromAccountId(), details, MaskingUtils.currentCorrelationId()));
+
+        log.info("Transfer reversed: transferId={} from={} to={} amount={}",
+                req.transferId(), req.fromAccountId(), req.toAccountId(), req.amount());
     }
 
     // ── Helpers ───────────────────────────────────────────────────

@@ -281,6 +281,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_secret}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       ACCOUNT_SERVICE_URL: http://account-service:8082
+      LEDGER_SERVICE_URL: http://ledger-service:8084
     depends_on:
       postgres:
         condition: service_healthy
@@ -290,6 +291,8 @@ services:
         condition: service_healthy
       account-service:
         condition: service_healthy
+      ledger-service:
+        condition: service_healthy
     networks:
       - bankflow-net
     healthcheck:
@@ -298,30 +301,35 @@ services:
       timeout: 10s
       retries: 5
 
-  # ledger-service:
-  #   build:
-  #     context: .
-  #     dockerfile: ledger-service/Dockerfile
-  #   container_name: bankflow-ledger-service
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8084:8084"
-  #   environment:
-  #     SPRING_PROFILES_ACTIVE: docker
-  #     JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ledger_db
-  #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
-  #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
-  #     JWT_SECRET: ${JWT_SECRET}
-  #     INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
-  #     KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     kafka:
-  #       condition: service_healthy
-  #   networks:
-  #     - bankflow-net
+  ledger-service:
+    build:
+      context: .
+      dockerfile: ledger-service/Dockerfile
+    container_name: bankflow-ledger-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ledger_db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bankflow}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bankflow_secret}
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - bankflow-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
 
   # notification-service:
   #   build:
